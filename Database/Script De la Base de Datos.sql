@@ -663,92 +663,88 @@ END;
 
 
 
+SELECT * FROM ROL
+-- 1. Insertar Roles
+GO
+INSERT INTO Rol (nombreRol, descripcionRol, adicionadoPor, fechaAdicion)
+VALUES 
+('Administrador', 'Acceso total', 'sistema', GETDATE()),
+('Empleado', 'Acceso limitado a su perfil', 'sistema', GETDATE());
 
--- Tabla Rol
-INSERT INTO Rol (nombreRol, descripcionRol, adicionadoPor, fechaAdicion) VALUES ('Director', 'Puede hacer todas las acciones', 'admin', '2022-08-30');
-INSERT INTO Rol (nombreRol, descripcionRol, adicionadoPor, fechaAdicion) VALUES ('Normal', 'Puede hacer acciones limitadas', 'admin', '2022-11-01');
-INSERT INTO Rol (nombreRol, descripcionRol, adicionadoPor, fechaAdicion) VALUES ('Agregar', 'Solo puede agregar', 'admin', '2024-01-15');
+-- 2. Insertar Usuarios
+GO
+INSERT INTO Usuario (nombreUsuario, contrasenna, adicionadoPor, fechaAdicion)
+VALUES 
+('admin', 'admin123', 'sistema', GETDATE()),
+('mauricio.cordero', 'pass1234', 'admin', GETDATE());
 
--- Tabla Usuario
-INSERT INTO Usuario (nombreUsuario, contrasenna, adicionadoPor, fechaAdicion) VALUES ('lucila.bustos', 'pass1123', 'admin', '2023-03-07');
-INSERT INTO Usuario (nombreUsuario, contrasenna, adicionadoPor, fechaAdicion) VALUES ('bernal.castro', 'pass2123', 'admin', '2025-03-15');
-INSERT INTO Usuario (nombreUsuario, contrasenna, adicionadoPor, fechaAdicion) VALUES ('arce.patricia', 'pass3123', 'admin', '2024-06-04');
-INSERT INTO Usuario (nombreUsuario, contrasenna, adicionadoPor, fechaAdicion) VALUES ('julio.rivera', 'pass4123', 'admin', '2023-06-30');
-INSERT INTO Usuario (nombreUsuario, contrasenna, adicionadoPor, fechaAdicion) VALUES ('trinidad.vazquez', 'pass5123', 'admin', '2022-11-27');
+-- 3. Insertar ListaRoles
+SELECT * FROM ListaRoles
+INSERT INTO ListaRoles (idRol, idUsuario, estado, adicionadoPor, fechaAdicion)
+VALUES 
+(1, 1, 'A', 'sistema', GETDATE()), -- admin con rol Administrador
+(2, 2, 'A', 'admin', GETDATE());   -- mauricio.cordero con rol Empleado
 
--- Tabla ListaRoles
-INSERT INTO ListaRoles (idRol, idUsuario, estado, adicionadoPor, fechaAdicion) VALUES (1, 1, 'A', 'admin', '2024-07-07');
-INSERT INTO ListaRoles (idRol, idUsuario, estado, adicionadoPor, fechaAdicion) VALUES (2, 2, 'A', 'admin', '2022-03-29');
-INSERT INTO ListaRoles (idRol, idUsuario, estado, adicionadoPor, fechaAdicion) VALUES (3, 3, 'A', 'admin', '2022-10-20');
+-- 4. Insertar Empleados (usando los usuarios anteriores)
+SELECT * FROM Empleado
+INSERT INTO Empleado (
+    identificacion, primerNombre, segundoNombre, primerApellido, segundoApellido,
+    fechaContratacion, salarioBruto, idUsuario, activo, fechaAdicion, adicionadoPor
+)
+VALUES 
+('206060606', 'Mauricio', 'Leonel', 'Cordero', 'Méndez', 
+ '2021-01-15', 650000, 2, 'S', GETDATE(), 'admin');
 
--- Tabla Empleado
-INSERT INTO Empleado (identificacion, primerNombre, segundoNombre, primerApellido, segundoApellido, fechaContratacion, salarioBruto, idUsuario, activo, fechaAdicion, adicionadoPor) VALUES ('160-38-2402', 'Julio', 'César', 'Sánchez', 'Acosta', '2022-01-21', 783789, 1, 'S', '2022-11-18', 'admin');
-INSERT INTO Empleado (identificacion, primerNombre, segundoNombre, primerApellido, segundoApellido, fechaContratacion, salarioBruto, idUsuario, activo, fechaAdicion, adicionadoPor) VALUES ('789-89-7763', 'Camila', 'Victoria', 'Gómez', 'Mora', '2024-03-12', 569007, 2, 'S', '2023-12-26', 'admin');
-INSERT INTO Empleado (identificacion, primerNombre, segundoNombre, primerApellido, segundoApellido, fechaContratacion, salarioBruto, idUsuario, activo, fechaAdicion, adicionadoPor) VALUES ('105-37-1592', 'Esteban', 'Andrés', 'López', 'Fernández', '2022-04-11', 346481, 3, 'S', '2025-06-25', 'admin');
-INSERT INTO Empleado (identificacion, primerNombre, segundoNombre, primerApellido, segundoApellido, fechaContratacion, salarioBruto, idUsuario, activo, fechaAdicion, adicionadoPor) VALUES ('176-45-3926', 'Karla', 'Isabel', 'Hernández', 'Vega', '2023-09-02', 547870, 4, 'S', '2022-03-13', 'admin');
-INSERT INTO Empleado (identificacion, primerNombre, segundoNombre, primerApellido, segundoApellido, fechaContratacion, salarioBruto, idUsuario, activo, fechaAdicion, adicionadoPor) VALUES ('145-88-6481', 'Mauricio', 'Leonel', 'Cordero', 'Méndez', '2022-07-14', 598496, 5, 'S', '2022-07-30', 'admin');
+-- 5. Insertar Departamento
+SELECT * FROM Departamento
+INSERT INTO Departamento (nombre, descripcion, estado, adicionadoPor, fechaAdicion)
+VALUES ('Contabilidad', 'Departamento de finanzas', 'A', 'admin', GETDATE());
 
--- Tabla HistorialSalarios
-INSERT INTO HistorialSalarios (salarioAnterior, salarioNuevo, adicionadoPor, fechaAdicion, idEmpleado) VALUES (377440, 655048, 'admin', '2025-01-16', 1);
-INSERT INTO HistorialSalarios (salarioAnterior, salarioNuevo, adicionadoPor, fechaAdicion, idEmpleado) VALUES (465885, 727739, 'admin', '2022-10-02', 2);
-INSERT INTO HistorialSalarios (salarioAnterior, salarioNuevo, adicionadoPor, fechaAdicion, idEmpleado) VALUES (331493, 579050, 'admin', '2023-04-16', 3);
-INSERT INTO HistorialSalarios (salarioAnterior, salarioNuevo, adicionadoPor, fechaAdicion, idEmpleado) VALUES (474682, 606427, 'admin', '2022-11-18', 4);
-INSERT INTO HistorialSalarios (salarioAnterior, salarioNuevo, adicionadoPor, fechaAdicion, idEmpleado) VALUES (486290, 662143, 'admin', '2025-01-25', 5);
+-- 6. Insertar Puesto
+SELECT * FROM Puesto
+INSERT INTO Puesto (nombre, descripcion, estado, adicionadoPor, fechaAdicion)
+VALUES ('Contador General', 'Encargado de los estados financieros', 'A', 'admin', GETDATE());
 
--- Tabla SolicitudVacaciones
-INSERT INTO SolicitudVacaciones (detalle, estado, fechaAdicion, adicionadoPor, idEmpleado) VALUES ('Necesito vacaciones para asuntos familiares.', 'Pendiente', '2024-12-22', 'admin', 1);
-INSERT INTO SolicitudVacaciones (detalle, estado, fechaAdicion, adicionadoPor, idEmpleado) VALUES ('Quiero descansar durante Semana Santa.', 'Pendiente', '2022-07-04', 'admin', 2);
-INSERT INTO SolicitudVacaciones (detalle, estado, fechaAdicion, adicionadoPor, idEmpleado) VALUES ('Solicito vacaciones para viaje internacional.', 'Pendiente', '2024-12-26', 'admin', 3);
-INSERT INTO SolicitudVacaciones (detalle, estado, fechaAdicion, adicionadoPor, idEmpleado) VALUES ('Deseo tiempo para resolver temas personales.', 'Pendiente', '2022-10-15', 'admin', 4);
-INSERT INTO SolicitudVacaciones (detalle, estado, fechaAdicion, adicionadoPor, idEmpleado) VALUES ('Vacaciones solicitadas para asistir a boda.', 'Pendiente', '2024-11-10', 'admin', 5);
+-- 7. Insertar Jornada
+SELECT * FROM Jornada
+INSERT INTO Jornada (nombre, descripcion, estado, horasSemanales, adicionadoPor, fechaAdicion)
+VALUES ('Tiempo Completo', 'Jornada completa de 40 horas semanales', 'A', 40, 'admin', GETDATE());
 
--- Tabla Contacto
-INSERT INTO Contacto (tipoContacto, infoContacto, adicionadoPor, fechaAdicion, idEmpleado) VALUES ('Correo', 'lucila@example.com', 'admin', '2025-04-02', 1);
-INSERT INTO Contacto (tipoContacto, infoContacto, adicionadoPor, fechaAdicion, idEmpleado) VALUES ('Correo', 'bernal@example.com', 'admin', '2025-05-08', 2);
-INSERT INTO Contacto (tipoContacto, infoContacto, adicionadoPor, fechaAdicion, idEmpleado) VALUES ('Correo', 'arce@example.com', 'admin', '2022-12-20', 3);
-INSERT INTO Contacto (tipoContacto, infoContacto, adicionadoPor, fechaAdicion, idEmpleado) VALUES ('Correo', 'julio@example.com', 'admin', '2024-03-25', 4);
-INSERT INTO Contacto (tipoContacto, infoContacto, adicionadoPor, fechaAdicion, idEmpleado) VALUES ('Correo', 'trinidad@example.com', 'admin', '2025-04-12', 5);
+-- 8. Insertar HistorialDepartamentos
+SELECT * FROM HistorialDepartamentos
+INSERT INTO HistorialDepartamentos (idEmpleado, idDepartamento, estado, adicionadoPor, fechaAdicion)
+VALUES (1, 1, 'A', 'admin', GETDATE());
 
--- Tabla Contrato
-INSERT INTO Contrato (tipoContrato, estadoContrato, adicionadoPor, fechaAdicion, idEmpleado) VALUES ('Indefinido', 'A', 'admin', '2022-09-06', 1);
-INSERT INTO Contrato (tipoContrato, estadoContrato, adicionadoPor, fechaAdicion, idEmpleado) VALUES ('Temporal', 'A', 'admin', '2023-08-17', 2);
-INSERT INTO Contrato (tipoContrato, estadoContrato, adicionadoPor, fechaAdicion, idEmpleado) VALUES ('Indefinido', 'A', 'admin', '2024-11-30', 3);
-INSERT INTO Contrato (tipoContrato, estadoContrato, adicionadoPor, fechaAdicion, idEmpleado) VALUES ('Indefinido', 'A', 'admin', '2023-12-23', 4);
-INSERT INTO Contrato (tipoContrato, estadoContrato, adicionadoPor, fechaAdicion, idEmpleado) VALUES ('Temporal', 'A', 'admin', '2022-01-08', 5);
+-- 9. Insertar HistorialPuesto
+SELECT * FROM HistorialDepartamentos
+INSERT INTO HistorialPuesto (idEmpleado, idPuesto, estado, adicionadoPor, fechaAdicion)
+VALUES (1, 1, 'A', 'admin', GETDATE());
 
--- Tabla Puesto
-INSERT INTO Puesto (nombre, descripcion, estado, adicionadoPor, fechaAdicion) VALUES ('Director de Marketing', 'Desarrolla estrategias promocionales.', 'A', 'admin', '2023-09-25');
-INSERT INTO Puesto (nombre, descripcion, estado, adicionadoPor, fechaAdicion) VALUES ('Ingeniero DevOps', 'Gestiona integración y despliegue continuo.', 'A', 'admin', '2025-05-28');
-INSERT INTO Puesto (nombre, descripcion, estado, adicionadoPor, fechaAdicion) VALUES ('Analista de sistemas', 'Analiza requerimientos del sistema.', 'A', 'admin', '2022-03-16');
+-- 10. Insertar HistorialJornada
+SELECT * FROM  HistorialJornada
+INSERT INTO HistorialJornada (idEmpleado, idJornada, estado, adicionadoPor, fechaAdicion)
+VALUES (1, 1, 'A', 'admin', GETDATE());
 
--- Tabla HistorialPuesto
-INSERT INTO HistorialPuesto (idEmpleado, idPuesto, estado, adicionadoPor, fechaAdicion) VALUES (1, 2, 'A', 'admin', '2024-04-30');
-INSERT INTO HistorialPuesto (idEmpleado, idPuesto, estado, adicionadoPor, fechaAdicion) VALUES (2, 1, 'A', 'admin', '2023-06-29');
-INSERT INTO HistorialPuesto (idEmpleado, idPuesto, estado, adicionadoPor, fechaAdicion) VALUES (3, 1, 'A', 'admin', '2022-12-27');
-INSERT INTO HistorialPuesto (idEmpleado, idPuesto, estado, adicionadoPor, fechaAdicion) VALUES (4, 3, 'A', 'admin', '2023-11-08');
-INSERT INTO HistorialPuesto (idEmpleado, idPuesto, estado, adicionadoPor, fechaAdicion) VALUES (5, 2, 'A', 'admin', '2024-07-11');
+-- 11. Insertar Contrato
+SELECT * FROM Contrato
+INSERT INTO Contrato (tipoContrato, estadoContrato, adicionadoPor, fechaAdicion, idEmpleado)
+VALUES ('Indefinido', 'A', 'admin', GETDATE(), 1);
 
--- Tabla Jornada
-INSERT INTO Jornada (nombre, descripcion, estado, horasSemanales, adicionadoPor, fechaAdicion) VALUES ('Jornada 1', 'Horario matutino de 8 a 12.', 'A', 40, 'admin', '2024-08-10');
-INSERT INTO Jornada (nombre, descripcion, estado, horasSemanales, adicionadoPor, fechaAdicion) VALUES ('Jornada 2', 'Horario vespertino de 1 a 5.', 'A', 45, 'admin', '2025-06-28');
+-- 12. Insertar HistorialSalarios
+SELECT * FROM HistorialSalarios
+INSERT INTO HistorialSalarios (salarioAnterior, salarioNuevo, adicionadoPor, fechaAdicion, idEmpleado)
+VALUES (600000, 650000, 'admin', GETDATE(), 1);
 
--- Tabla HistorialJornada
-INSERT INTO HistorialJornada (idEmpleado, idJornada, estado, adicionadoPor, fechaAdicion) VALUES (1, 2, 'A', 'admin', '2023-09-12');
-INSERT INTO HistorialJornada (idEmpleado, idJornada, estado, adicionadoPor, fechaAdicion) VALUES (2, 1, 'A', 'admin', '2022-07-17');
-INSERT INTO HistorialJornada (idEmpleado, idJornada, estado, adicionadoPor, fechaAdicion) VALUES (3, 2, 'A', 'admin', '2025-02-08');
-INSERT INTO HistorialJornada (idEmpleado, idJornada, estado, adicionadoPor, fechaAdicion) VALUES (4, 1, 'A', 'admin', '2022-10-21');
-INSERT INTO HistorialJornada (idEmpleado, idJornada, estado, adicionadoPor, fechaAdicion) VALUES (5, 2, 'A', 'admin', '2022-04-14');
+-- 13. Insertar Solicitud de Vacaciones
+SELECT * FROM SolicitudVacaciones
+INSERT INTO SolicitudVacaciones (detalle, estado, fechaAdicion, adicionadoPor, idEmpleado)
+VALUES ('Vacaciones de una semana en julio', 'En Revision', GETDATE(), 'mauricio.cordero', 1);
 
--- Tabla Departamento
-INSERT INTO Departamento (nombre, descripcion, estado, adicionadoPor, fechaAdicion) VALUES ('TechNova S.A.', 'Optimización de procesos logísticos.', 'A', 'admin', '2025-01-27');
-INSERT INTO Departamento (nombre, descripcion, estado, adicionadoPor, fechaAdicion) VALUES ('Digitaliza Solutions', 'Desarrollo de plataformas digitales.', 'A', 'admin', '2025-04-06');
+-- 14. Insertar Contacto
+SELECT * FROM Contacto
+INSERT INTO Contacto (tipoContacto, infoContacto, adicionadoPor, fechaAdicion, idEmpleado)
+VALUES ('Correo electrónico', 'mauricio.cordero@email.com', 'admin', GETDATE(), 1);
 
--- Tabla HistorialDepartamentos
-INSERT INTO HistorialDepartamentos (idEmpleado, idDepartamento, estado, adicionadoPor, fechaAdicion) VALUES (1, 1, 'A', 'admin', '2023-01-11');
-INSERT INTO HistorialDepartamentos (idEmpleado, idDepartamento, estado, adicionadoPor, fechaAdicion) VALUES (2, 1, 'A', 'admin', '2022-06-01');
-INSERT INTO HistorialDepartamentos (idEmpleado, idDepartamento, estado, adicionadoPor, fechaAdicion) VALUES (3, 2, 'A', 'admin', '2023-06-13');
-INSERT INTO HistorialDepartamentos (idEmpleado, idDepartamento, estado, adicionadoPor, fechaAdicion) VALUES (4, 2, 'A', 'admin', '2025-06-21');
-INSERT INTO HistorialDepartamentos (idEmpleado, idDepartamento, estado, adicionadoPor, fechaAdicion) VALUES (5, 1, 'A', 'admin', '2023-05-19');
 
 
 
