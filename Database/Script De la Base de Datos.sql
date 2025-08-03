@@ -661,10 +661,6 @@ BEGIN
 END;
 
 
-
-
-
-
 SELECT * FROM ROL
 -- 1. Insertar Roles
 GO
@@ -681,14 +677,15 @@ VALUES
 ('mauricio.cordero', 'pass1234', 'admin', GETDATE());
 
 -- 3. Insertar ListaRoles
-SELECT * FROM ListaRoles
+GO
+
 INSERT INTO ListaRoles (idRol, idUsuario, estado, adicionadoPor, fechaAdicion)
 VALUES 
 (1, 1, 'A', 'sistema', GETDATE()), -- admin con rol Administrador
 (2, 2, 'A', 'admin', GETDATE());   -- mauricio.cordero con rol Empleado
 
 -- 4. Insertar Empleados (usando los usuarios anteriores)
-SELECT * FROM Empleado
+GO
 INSERT INTO Empleado (
     identificacion, primerNombre, segundoNombre, primerApellido, segundoApellido,
     fechaContratacion, salarioBruto, idUsuario, activo, fechaAdicion, adicionadoPor
@@ -698,52 +695,52 @@ VALUES
  '2021-01-15', 650000, 2, 'S', GETDATE(), 'admin');
 
 -- 5. Insertar Departamento
-SELECT * FROM Departamento
+GO
 INSERT INTO Departamento (nombre, descripcion, estado, adicionadoPor, fechaAdicion)
 VALUES ('Contabilidad', 'Departamento de finanzas', 'A', 'admin', GETDATE());
 
 -- 6. Insertar Puesto
-SELECT * FROM Puesto
+GO
 INSERT INTO Puesto (nombre, descripcion, estado, adicionadoPor, fechaAdicion)
 VALUES ('Contador General', 'Encargado de los estados financieros', 'A', 'admin', GETDATE());
 
 -- 7. Insertar Jornada
-SELECT * FROM Jornada
+GO
 INSERT INTO Jornada (nombre, descripcion, estado, horasSemanales, adicionadoPor, fechaAdicion)
 VALUES ('Tiempo Completo', 'Jornada completa de 40 horas semanales', 'A', 40, 'admin', GETDATE());
 
 -- 8. Insertar HistorialDepartamentos
-SELECT * FROM HistorialDepartamentos
+GO
 INSERT INTO HistorialDepartamentos (idEmpleado, idDepartamento, estado, adicionadoPor, fechaAdicion)
 VALUES (1, 1, 'A', 'admin', GETDATE());
 
 -- 9. Insertar HistorialPuesto
-SELECT * FROM HistorialDepartamentos
+GO
 INSERT INTO HistorialPuesto (idEmpleado, idPuesto, estado, adicionadoPor, fechaAdicion)
 VALUES (1, 1, 'A', 'admin', GETDATE());
 
 -- 10. Insertar HistorialJornada
-SELECT * FROM  HistorialJornada
+GO
 INSERT INTO HistorialJornada (idEmpleado, idJornada, estado, adicionadoPor, fechaAdicion)
 VALUES (1, 1, 'A', 'admin', GETDATE());
 
 -- 11. Insertar Contrato
-SELECT * FROM Contrato
+GO
 INSERT INTO Contrato (tipoContrato, estadoContrato, adicionadoPor, fechaAdicion, idEmpleado)
 VALUES ('Indefinido', 'A', 'admin', GETDATE(), 1);
 
 -- 12. Insertar HistorialSalarios
-SELECT * FROM HistorialSalarios
+GO
 INSERT INTO HistorialSalarios (salarioAnterior, salarioNuevo, adicionadoPor, fechaAdicion, idEmpleado)
 VALUES (600000, 650000, 'admin', GETDATE(), 1);
 
 -- 13. Insertar Solicitud de Vacaciones
-SELECT * FROM SolicitudVacaciones
+GO
 INSERT INTO SolicitudVacaciones (detalle, estado, fechaAdicion, adicionadoPor, idEmpleado)
 VALUES ('Vacaciones de una semana en julio', 'En Revision', GETDATE(), 'mauricio.cordero', 1);
 
 -- 14. Insertar Contacto
-SELECT * FROM Contacto
+GO
 INSERT INTO Contacto (tipoContacto, infoContacto, adicionadoPor, fechaAdicion, idEmpleado)
 VALUES ('Correo electrónico', 'mauricio.cordero@email.com', 'admin', GETDATE(), 1);
 
