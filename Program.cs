@@ -14,6 +14,10 @@ builder.Services.AddSingleton<IConfiguration>(builder.Configuration);
 builder.Services.AddScoped<ContactoService>();
 builder.Services.AddScoped<UsuarioService>();
 builder.Services.AddScoped<ListaRolesService>();
+builder.Services.AddScoped<SolicitudVacacionesService>();
+builder.Services.AddScoped<EmpleadoService>();  
+builder.Services.AddScoped<ConstanciaSalarialService>();
+builder.Services.AddScoped<LiquidacionService>();
 
 // Configuración de CORS
 builder.Services.AddCors(options =>

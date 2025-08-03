@@ -258,6 +258,7 @@ BEGIN
 END;
 
 GO
+
 CREATE PROCEDURE spCrearSolicitudVacaciones
 (
     @pDetalle NVARCHAR(200),
@@ -334,6 +335,7 @@ BEGIN
         SET
             estado = @pResolucion,
             revisadoPor = @pRevisadoPor,
+			usuarioModificacion = @pRevisadoPor,
             fechaModificacion = GETDATE(),
             fechaRevision = GETDATE()
         WHERE idSolicitudVacaciones = @pidSolicitudVacaciones;

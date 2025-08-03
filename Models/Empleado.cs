@@ -19,5 +19,9 @@ namespace APIProyecto.Models
         public string? adicionadoPor { get; set; }
         public DateTime? fechaModificacion { get; set; }
         public string? usuarioModificacion { get; set; }
+        public string? nombreCompleto { get; set; }
+        public string? nombreDepartamento { get; set; }
+        public string? nombrePuesto { get; set; }
+        public string? nombreJornada { get; set; }
     }
 }
