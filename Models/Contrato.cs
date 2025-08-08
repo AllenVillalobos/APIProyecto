@@ -2,7 +2,7 @@
 
 namespace APIProyecto.Models
 {
-    public class ContratoService
+    public class Contrato
     {
         public int idContrato { get; set; }
         public string? tipoContrato { get; set; }

@@ -479,7 +479,8 @@ BEGIN
         LEFT JOIN Departamento D ON HD.idDepartamento = D.idDepartamento
         LEFT JOIN HistorialPuesto HP ON E.idEmpleado = HP.idEmpleado AND HP.estado = 'A'
         LEFT JOIN Puesto P ON HP.idPuesto = P.idPuesto
-        LEFT JOIN Contrato C ON E.idEmpleado = C.idEmpleado;
+        LEFT JOIN Contrato C ON E.idEmpleado = C.idEmpleado
+		WHERE E.idEmpleado = @pIdEmpleado;
 
     END TRY
     BEGIN CATCH
