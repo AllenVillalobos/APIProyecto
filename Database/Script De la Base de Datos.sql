@@ -32,8 +32,7 @@ estado CHAR(1) NOT NULL,
 adicionadoPor NVARCHAR(150) NOT NULL,
 fechaAdicion DATE NOT NULL,
 fechaModificacion DATE,
-modificadoPor NVARCHAR(150),
-PRIMARY KEY (idRol, idUsuario)
+modificadoPor NVARCHAR(150)
 );
 
 GO
@@ -54,7 +53,7 @@ primerApellido NVARCHAR(100) NOT NULL,
 segundoApellido NVARCHAR(100),
 fechaContratacion DATE NOT NULL,
 salarioBruto FLOAT NOT NULL,
-idUsuario INT NOT NULL UNIQUE,
+idUsuario INT,
 activo CHAR(1) NOT NULL,
 fechaAdicion DATE NOT NULL,
 adicionadoPor NVARCHAR(150) NOT NULL,
@@ -152,8 +151,7 @@ estado CHAR(1) NOT NULL,
 adicionadoPor NVARCHAR(150) NOT NULL,
 fechaAdicion DATE NOT NULL,
 fechaModificacion DATE,
-modificadoPor NVARCHAR(150),
-PRIMARY KEY (idEmpleado, idPuesto)
+modificadoPor NVARCHAR(150)
 );
 
 GO
@@ -185,8 +183,7 @@ estado CHAR(1) NOT NULL,
 adicionadoPor NVARCHAR(150) NOT NULL,
 fechaAdicion DATE NOT NULL,
 fechaModificacion DATE NULL,
-modificadoPor NVARCHAR(150) NULL,
-PRIMARY KEY (idEmpleado, idJornada)
+modificadoPor NVARCHAR(150) NULL
 );
 
 GO
@@ -217,8 +214,7 @@ estado CHAR(1) NOT NULL,
 adicionadoPor NVARCHAR(150) NOT NULL,
 fechaAdicion DATE NOT NULL,
 fechaModificacion DATE,
-modificadoPor NVARCHAR(150),
-PRIMARY KEY (idEmpleado, idDepartamento)
+modificadoPor NVARCHAR(150)
 );
 
 GO
@@ -603,7 +599,8 @@ BEGIN
         LEFT JOIN HistorialPuesto HP ON E.idEmpleado = HP.idEmpleado AND HP.estado = 'A'
         LEFT JOIN Puesto P ON HP.idPuesto = P.idPuesto
         LEFT JOIN HistorialJornada HJ ON E.idEmpleado = HJ.idEmpleado AND HJ.estado = 'A'
-        LEFT JOIN Jornada J ON J.idJornada = HJ.idJornada;
+        LEFT JOIN Jornada J ON J.idJornada = HJ.idJornada
+		WHERE E.activo !='N';
     END TRY
     BEGIN CATCH
         SET @ErrorMessage = ERROR_MESSAGE();
@@ -612,6 +609,44 @@ BEGIN
         RAISERROR(@ErrorMessage, @ErrorSeverity, @ErrorState);
     END CATCH
 END;
+
+GO
+CREATE PROCEDURE spListarEmpleadosGestion
+AS
+BEGIN 
+    DECLARE @ErrorMessage NVARCHAR(255);
+	DECLARE @ErrorSeverity INT;
+	DECLARE @ErrorState INT;
+    BEGIN TRY
+        SELECT 
+            E.idEmpleado,
+            E.identificacion,
+            E.primerNombre,
+            ISNULL(E.segundoNombre + ' ', '') as 'segundoNombre' ,
+            E.primerApellido,
+            ISNULL(E.segundoApellido, '') as 'segundoApellido',
+            E.salarioBruto,
+			E.fechaContratacion,
+            D.nombre AS Departamento,
+            P.nombre AS Puesto,
+            J.nombre AS Jornada
+        FROM Empleado E
+        LEFT JOIN HistorialDepartamentos HD ON E.idEmpleado = HD.idEmpleado AND HD.estado = 'A'
+        LEFT JOIN Departamento D ON HD.idDepartamento = D.idDepartamento
+        LEFT JOIN HistorialPuesto HP ON E.idEmpleado = HP.idEmpleado AND HP.estado = 'A'
+        LEFT JOIN Puesto P ON HP.idPuesto = P.idPuesto
+        LEFT JOIN HistorialJornada HJ ON E.idEmpleado = HJ.idEmpleado AND HJ.estado = 'A'
+        LEFT JOIN Jornada J ON J.idJornada = HJ.idJornada
+		WHERE E.activo !='N';
+    END TRY
+    BEGIN CATCH
+        SET @ErrorMessage = ERROR_MESSAGE();
+        SET @ErrorSeverity = ERROR_SEVERITY();
+        SET @ErrorState = ERROR_STATE();
+        RAISERROR(@ErrorMessage, @ErrorSeverity, @ErrorState);
+    END CATCH
+END;
+
 
 
 GO
@@ -661,6 +696,334 @@ BEGIN
     END CATCH
 END;
 
+GO
+CREATE PROCEDURE spCrearEmpleado
+(
+@pIdentificacion    NVARCHAR(30),
+@pPrimerNombre      NVARCHAR(100),
+@pSegundoNombre     NVARCHAR(100),
+@pPrimerApellido    NVARCHAR(100),
+@pSegundoApellido   NVARCHAR(100),
+@pFechaContratacion DATE,
+@pSalarioBruto      FLOAT,
+@pAdicionadoPor     NVARCHAR(150),
+@pIdDepartamento    INT,
+@pIdJornada         INT,
+@pIdPuesto          INT
+)
+AS
+BEGIN
+    DECLARE @pIdEmpleadoIngreso INT;
+    DECLARE @ErrorMessage NVARCHAR(255);
+    DECLARE @ErrorSeverity INT;
+    DECLARE @ErrorState INT;
+
+    BEGIN TRY
+        INSERT INTO Empleado
+        (
+            identificacion, primerNombre, segundoNombre, primerApellido, segundoApellido,
+            fechaContratacion, salarioBruto, activo, fechaAdicion, adicionadoPor
+        )
+        VALUES
+        (
+            @pIdentificacion, @pPrimerNombre, @pSegundoNombre, @pPrimerApellido, @pSegundoApellido,
+            @pFechaContratacion, @pSalarioBruto, 'A', GETDATE(), @pAdicionadoPor
+        );
+
+        -- Obtener el id recién insertado
+        SELECT @pIdEmpleadoIngreso = SCOPE_IDENTITY();
+
+        INSERT INTO HistorialDepartamentos
+        (idEmpleado, idDepartamento, estado, adicionadoPor, fechaAdicion)
+        VALUES
+        (@pIdEmpleadoIngreso, @pIdDepartamento, 'A', @pAdicionadoPor, GETDATE());
+
+        INSERT INTO HistorialJornada
+        (idEmpleado, idJornada, estado, adicionadoPor, fechaAdicion)
+        VALUES
+        (@pIdEmpleadoIngreso, @pIdJornada, 'A', @pAdicionadoPor, GETDATE());
+
+        INSERT INTO HistorialPuesto
+        (idEmpleado, idPuesto, estado, adicionadoPor, fechaAdicion)
+        VALUES
+        (@pIdEmpleadoIngreso, @pIdPuesto, 'A', @pAdicionadoPor, GETDATE());
+
+    END TRY
+    BEGIN CATCH
+        SET @ErrorMessage = ERROR_MESSAGE();
+        SET @ErrorSeverity = ERROR_SEVERITY();
+        SET @ErrorState = ERROR_STATE();
+        RAISERROR(@ErrorMessage, @ErrorSeverity, @ErrorState);
+    END CATCH
+END;
+GO
+
+
+GO
+CREATE PROCEDURE spModificarEmpleado
+(
+    @pIdEmpleado      INT,
+    @pIdentificacion  NVARCHAR(30),
+    @pPrimerNombre    NVARCHAR(100),
+    @pSegundoNombre   NVARCHAR(100),
+    @pPrimerApellido  NVARCHAR(100),
+    @pSegundoApellido NVARCHAR(100),
+    @pSalarioBruto    FLOAT,
+    @pModificadoPor   NVARCHAR(150),
+    @pIdDepartamento  INT,
+    @pIdJornada       INT,
+    @pIdPuesto        INT
+)
+AS
+BEGIN
+    DECLARE @ErrorMessage NVARCHAR(255);
+    DECLARE @ErrorSeverity INT;
+    DECLARE @ErrorState INT;
+
+    DECLARE @pSalarioAnterior FLOAT;
+    DECLARE @pIdDepartamentoAnterior INT;
+    DECLARE @pIdJornadaAnterior INT;
+    DECLARE @pIdPuestoAnterior INT;
+
+    BEGIN TRY
+        -- Validar existencia del empleado
+        IF NOT EXISTS (SELECT 1 FROM Empleado WHERE idEmpleado = @pIdEmpleado)
+        BEGIN
+            RAISERROR('El empleado con ID %d no existe.', 16, 1, @pIdEmpleado);
+            RETURN;
+        END
+
+
+        SELECT @pSalarioAnterior = salarioBruto
+        FROM Empleado
+        WHERE idEmpleado = @pIdEmpleado;
+
+        SELECT @pIdDepartamentoAnterior = idDepartamento
+        FROM HistorialDepartamentos
+        WHERE idEmpleado = @pIdEmpleado AND estado = 'A';
+
+        SELECT @pIdJornadaAnterior = idJornada
+        FROM HistorialJornada
+        WHERE idEmpleado = @pIdEmpleado AND estado = 'A';
+
+        SELECT @pIdPuestoAnterior = idPuesto
+        FROM HistorialPuesto
+        WHERE idEmpleado = @pIdEmpleado AND estado = 'A';
+
+        -- Si cambió salario, registrar historial
+        IF @pSalarioAnterior IS NOT NULL AND @pSalarioAnterior <> @pSalarioBruto
+        BEGIN
+            INSERT INTO HistorialSalarios
+                (salarioAnterior, salarioNuevo, adicionadoPor, fechaAdicion, idEmpleado)
+            VALUES
+                (@pSalarioAnterior, @pSalarioBruto, @pModificadoPor, GETDATE(), @pIdEmpleado);
+        END
+
+        -- Actualizar datos base del empleado
+        UPDATE Empleado
+        SET
+            identificacion      = @pIdentificacion,
+            primerNombre        = @pPrimerNombre,
+            segundoNombre       = @pSegundoNombre,
+            primerApellido      = @pPrimerApellido,
+            segundoApellido     = @pSegundoApellido,
+            salarioBruto        = @pSalarioBruto,
+            usuarioModificacion = @pModificadoPor,
+            fechaModificacion   = GETDATE()
+        WHERE idEmpleado = @pIdEmpleado;
+
+        -- Departamento
+        IF @pIdDepartamentoAnterior IS NULL
+        BEGIN
+            INSERT INTO HistorialDepartamentos
+                (idEmpleado, idDepartamento, estado, adicionadoPor, fechaAdicion)
+            VALUES
+                (@pIdEmpleado, @pIdDepartamento, 'A', @pModificadoPor, GETDATE());
+        END
+        ELSE IF @pIdDepartamentoAnterior != @pIdDepartamento
+        BEGIN
+            UPDATE HistorialDepartamentos
+            SET estado = 'N',
+                modificadoPor = @pModificadoPor,
+                fechaModificacion = GETDATE()
+            WHERE idEmpleado = @pIdEmpleado AND estado = 'A';
+
+            INSERT INTO HistorialDepartamentos
+                (idEmpleado, idDepartamento, estado, adicionadoPor, fechaAdicion)
+            VALUES
+                (@pIdEmpleado, @pIdDepartamento, 'A', @pModificadoPor, GETDATE());
+        END
+
+        -- Jornada
+        IF @pIdJornadaAnterior IS NULL
+        BEGIN
+            INSERT INTO HistorialJornada
+                (idEmpleado, idJornada, estado, adicionadoPor, fechaAdicion)
+            VALUES
+                (@pIdEmpleado, @pIdJornada, 'A', @pModificadoPor, GETDATE());
+        END
+        ELSE IF @pIdJornadaAnterior != @pIdJornada
+        BEGIN
+            UPDATE HistorialJornada
+            SET estado = 'N',
+                modificadoPor = @pModificadoPor,
+                fechaModificacion = GETDATE()
+            WHERE idEmpleado = @pIdEmpleado AND estado = 'A';
+
+            INSERT INTO HistorialJornada
+                (idEmpleado, idJornada, estado, adicionadoPor, fechaAdicion)
+            VALUES
+                (@pIdEmpleado, @pIdJornada, 'A', @pModificadoPor, GETDATE());
+        END
+
+        -- Puesto
+        IF @pIdPuestoAnterior IS NULL
+        BEGIN
+            INSERT INTO HistorialPuesto
+                (idEmpleado, idPuesto, estado, adicionadoPor, fechaAdicion)
+            VALUES
+                (@pIdEmpleado, @pIdPuesto, 'A', @pModificadoPor, GETDATE());
+        END
+        ELSE IF @pIdPuestoAnterior != @pIdPuesto
+        BEGIN
+            UPDATE HistorialPuesto
+            SET estado = 'N',
+                modificadoPor = @pModificadoPor,
+                fechaModificacion = GETDATE()
+            WHERE idEmpleado = @pIdEmpleado AND estado = 'A';
+
+            INSERT INTO HistorialPuesto
+                (idEmpleado, idPuesto, estado, adicionadoPor, fechaAdicion)
+            VALUES
+                (@pIdEmpleado, @pIdPuesto, 'A', @pModificadoPor, GETDATE());
+        END
+    END TRY
+    BEGIN CATCH
+        SET @ErrorMessage = ERROR_MESSAGE();
+        SET @ErrorSeverity = ERROR_SEVERITY();
+        SET @ErrorState = ERROR_STATE();
+        RAISERROR(@ErrorMessage, @ErrorSeverity, @ErrorState);
+    END CATCH
+END;
+
+
+
+SELECT * FROM HistorialDepartamentos WHERE idEmpleado = 5
+
+
+GO
+CREATE PROCEDURE spEliminrEmpleaado
+(
+@pIdEmpleado INT,
+@pModificadoPor NVARCHAR(150)
+)
+AS
+BEGIN
+    DECLARE @ErrorMessage NVARCHAR(255);
+    DECLARE @ErrorSeverity INT;
+    DECLARE @ErrorState INT;
+
+    BEGIN TRY
+
+		UPDATE Empleado
+		SET
+		activo = 'N',
+		usuarioModificacion = @pModificadoPor,
+		fechaModificacion = GETDATE()
+		WHERE idEmpleado = @pIdEmpleado;
+
+		UPDATE HistorialDepartamentos
+		SET
+		estado = 'N',
+		modificadoPor = @pModificadoPor,
+		fechaModificacion = GETDATE()
+		WHERE idEmpleado = @pIdEmpleado;
+
+		UPDATE HistorialJornada
+		SET
+		estado = 'N',
+		modificadoPor = @pModificadoPor,
+		fechaModificacion = GETDATE()
+		WHERE idEmpleado = @pIdEmpleado;
+
+		UPDATE HistorialPuesto
+		SET
+		estado = 'N',
+		modificadoPor = @pModificadoPor,
+		fechaModificacion = GETDATE()
+		WHERE idEmpleado = @pIdEmpleado;
+
+    END TRY
+    BEGIN CATCH
+        SET @ErrorMessage = ERROR_MESSAGE();
+        SET @ErrorSeverity = ERROR_SEVERITY();
+        SET @ErrorState = ERROR_STATE();
+        RAISERROR(@ErrorMessage, @ErrorSeverity, @ErrorState);
+    END CATCH
+END;
+
+GO
+CREATE PROCEDURE spListarDepartamentos
+AS
+BEGIN
+    DECLARE @ErrorMessage NVARCHAR(255);
+    DECLARE @ErrorSeverity INT;
+    DECLARE @ErrorState INT;
+
+    BEGIN TRY
+	    SELECT idDepartamento, nombre 
+		FROM Departamento
+
+    END TRY
+    BEGIN CATCH
+        SET @ErrorMessage = ERROR_MESSAGE();
+        SET @ErrorSeverity = ERROR_SEVERITY();
+        SET @ErrorState = ERROR_STATE();
+        RAISERROR(@ErrorMessage, @ErrorSeverity, @ErrorState);
+    END CATCH
+END;
+
+GO
+CREATE PROCEDURE spListarPuesto
+AS
+BEGIN
+    DECLARE @ErrorMessage NVARCHAR(255);
+    DECLARE @ErrorSeverity INT;
+    DECLARE @ErrorState INT;
+
+    BEGIN TRY
+	    SELECT idPuesto, nombre 
+		FROM Puesto
+
+    END TRY
+    BEGIN CATCH
+        SET @ErrorMessage = ERROR_MESSAGE();
+        SET @ErrorSeverity = ERROR_SEVERITY();
+        SET @ErrorState = ERROR_STATE();
+        RAISERROR(@ErrorMessage, @ErrorSeverity, @ErrorState);
+    END CATCH
+END;
+
+GO
+CREATE PROCEDURE spListarJornada
+AS
+BEGIN
+    DECLARE @ErrorMessage NVARCHAR(255);
+    DECLARE @ErrorSeverity INT;
+    DECLARE @ErrorState INT;
+
+    BEGIN TRY
+	    SELECT idJornada, nombre 
+		FROM Jornada
+
+    END TRY
+    BEGIN CATCH
+        SET @ErrorMessage = ERROR_MESSAGE();
+        SET @ErrorSeverity = ERROR_SEVERITY();
+        SET @ErrorState = ERROR_STATE();
+        RAISERROR(@ErrorMessage, @ErrorSeverity, @ErrorState);
+    END CATCH
+END;
 
 SELECT * FROM ROL
 -- 1. Insertar Roles
@@ -672,20 +1035,41 @@ VALUES
 
 -- 2. Insertar Usuarios
 GO
+SELECT * FROM Usuario
 INSERT INTO Usuario (nombreUsuario, contrasenna, adicionadoPor, fechaAdicion)
 VALUES 
 ('admin', 'admin123', 'sistema', GETDATE()),
 ('mauricio.cordero', 'pass1234', 'admin', GETDATE());
 
+INSERT INTO Usuario (nombreUsuario, contrasenna, adicionadoPor, fechaAdicion)
+VALUES 
+('prueba', 'prueba', 'admin', GETDATE());
+
+SELECT * FROM Usuario
 -- 3. Insertar ListaRoles
 GO
 
+SELECT * FROM ListaRoles
 INSERT INTO ListaRoles (idRol, idUsuario, estado, adicionadoPor, fechaAdicion)
 VALUES 
 (1, 1, 'A', 'sistema', GETDATE()), -- admin con rol Administrador
 (2, 2, 'A', 'admin', GETDATE());   -- mauricio.cordero con rol Empleado
+INSERT INTO ListaRoles (idRol, idUsuario, estado, adicionadoPor, fechaAdicion)
+VALUES 
+(1, 3, 'A', 'sistema', GETDATE()); -- admin con rol Administrador
+
 
 -- 4. Insertar Empleados (usando los usuarios anteriores)
+GO
+SELECT *  FROM Empleado
+INSERT INTO Empleado (
+    identificacion, primerNombre, segundoNombre, primerApellido, segundoApellido,
+    fechaContratacion, salarioBruto, idUsuario, activo, fechaAdicion, adicionadoPor
+)
+VALUES 
+('206060612', 'PRUEBA', 'PRUEBA', 'PRUEBA', 'PRUEBA', 
+ '2021-01-15', 6500, 3, 'A', GETDATE(), 'admin');
+
 GO
 INSERT INTO Empleado (
     identificacion, primerNombre, segundoNombre, primerApellido, segundoApellido,
@@ -695,56 +1079,66 @@ VALUES
 ('206060606', 'Mauricio', 'Leonel', 'Cordero', 'Méndez', 
  '2021-01-15', 650000, 2, 'S', GETDATE(), 'admin');
 
--- 5. Insertar Departamento
+ -- 5. Insertar Departamento
 GO
+SELECT * FROM Departamento
 INSERT INTO Departamento (nombre, descripcion, estado, adicionadoPor, fechaAdicion)
 VALUES ('Contabilidad', 'Departamento de finanzas', 'A', 'admin', GETDATE());
+GO
+INSERT INTO Departamento (nombre, descripcion, estado, adicionadoPor, fechaAdicion)
+VALUES ('TI', 'Departamento de TI', 'A', 'admin', GETDATE());
 
 -- 6. Insertar Puesto
 GO
+SELECT * FROM Puesto
 INSERT INTO Puesto (nombre, descripcion, estado, adicionadoPor, fechaAdicion)
 VALUES ('Contador General', 'Encargado de los estados financieros', 'A', 'admin', GETDATE());
+GO
+INSERT INTO Puesto (nombre, descripcion, estado, adicionadoPor, fechaAdicion)
+VALUES ('Programador Junior', '', 'A', 'admin', GETDATE());
 
 -- 7. Insertar Jornada
 GO
+SELECT * FROM Jornada
 INSERT INTO Jornada (nombre, descripcion, estado, horasSemanales, adicionadoPor, fechaAdicion)
 VALUES ('Tiempo Completo', 'Jornada completa de 40 horas semanales', 'A', 40, 'admin', GETDATE());
 
 -- 8. Insertar HistorialDepartamentos
+SELECT * FROM HistorialDepartamentos
+SELECT * FROM Empleado
 GO
 INSERT INTO HistorialDepartamentos (idEmpleado, idDepartamento, estado, adicionadoPor, fechaAdicion)
-VALUES (1, 1, 'A', 'admin', GETDATE());
+VALUES (2, 1, 'A', 'admin', GETDATE());
 
 -- 9. Insertar HistorialPuesto
 GO
 INSERT INTO HistorialPuesto (idEmpleado, idPuesto, estado, adicionadoPor, fechaAdicion)
-VALUES (1, 1, 'A', 'admin', GETDATE());
+VALUES (2, 1, 'A', 'admin', GETDATE());
 
 -- 10. Insertar HistorialJornada
 GO
 INSERT INTO HistorialJornada (idEmpleado, idJornada, estado, adicionadoPor, fechaAdicion)
-VALUES (1, 1, 'A', 'admin', GETDATE());
+VALUES (2, 1, 'A', 'admin', GETDATE());
 
 -- 11. Insertar Contrato
 GO
 INSERT INTO Contrato (tipoContrato, estadoContrato, adicionadoPor, fechaAdicion, idEmpleado)
-VALUES ('Indefinido', 'A', 'admin', GETDATE(), 1);
+VALUES ('Indefinido', 'A', 'admin', GETDATE(), 2);
 
 -- 12. Insertar HistorialSalarios
 GO
 INSERT INTO HistorialSalarios (salarioAnterior, salarioNuevo, adicionadoPor, fechaAdicion, idEmpleado)
-VALUES (600000, 650000, 'admin', GETDATE(), 1);
+VALUES (600000, 650000, 'admin', GETDATE(), 2);
 
 -- 13. Insertar Solicitud de Vacaciones
 GO
 INSERT INTO SolicitudVacaciones (detalle, estado, fechaAdicion, adicionadoPor, idEmpleado)
-VALUES ('Vacaciones de una semana en julio', 'En Revision', GETDATE(), 'mauricio.cordero', 1);
+VALUES ('Vacaciones de una semana en julio', 'En Revision', GETDATE(), 'mauricio.cordero', 2);
 
 -- 14. Insertar Contacto
 GO
 INSERT INTO Contacto (tipoContacto, infoContacto, adicionadoPor, fechaAdicion, idEmpleado)
-VALUES ('Correo electrónico', 'mauricio.cordero@email.com', 'admin', GETDATE(), 1);
-
+VALUES ('Correo electrónico', 'mauricio.cordero@email.com', 'admin', GETDATE(), 2);
 
 
 
